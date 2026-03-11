@@ -16,6 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
         logContainer.scrollTop = logContainer.scrollHeight;
     };
 
+    // Listen to rotations from the AVL logic
+    tree.onRotate = (type, nodeValue) => {
+        log(`${type} Rotation completed at node ${nodeValue}`, 'rotation');
+    };
+
     insertBtn.addEventListener('click', () => {
         const value = parseInt(valueInput.value, 10);
         if (isNaN(value)) {

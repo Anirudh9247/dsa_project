@@ -64,22 +64,26 @@ class AVLTree {
 
         // Left Left Case
         if (balance > 1 && value < node.left.value) {
+            if (this.onRotate) this.onRotate('LL', node.value);
             return this.rotateRight(node);
         }
 
         // Right Right Case
         if (balance < -1 && value > node.right.value) {
+            if (this.onRotate) this.onRotate('RR', node.value);
             return this.rotateLeft(node);
         }
 
         // Left Right Case
         if (balance > 1 && value > node.left.value) {
+            if (this.onRotate) this.onRotate('LR', node.value);
             node.left = this.rotateLeft(node.left);
             return this.rotateRight(node);
         }
 
         // Right Left Case
         if (balance < -1 && value < node.right.value) {
+            if (this.onRotate) this.onRotate('RL', node.value);
             node.right = this.rotateRight(node.right);
             return this.rotateLeft(node);
         }
@@ -130,19 +134,23 @@ class AVLTree {
         const balance = this.getBalance(node);
 
         if (balance > 1 && this.getBalance(node.left) >= 0) {
+            if (this.onRotate) this.onRotate('LL', node.value);
             return this.rotateRight(node);
         }
 
         if (balance > 1 && this.getBalance(node.left) < 0) {
+            if (this.onRotate) this.onRotate('LR', node.value);
             node.left = this.rotateLeft(node.left);
             return this.rotateRight(node);
         }
 
         if (balance < -1 && this.getBalance(node.right) <= 0) {
+            if (this.onRotate) this.onRotate('RR', node.value);
             return this.rotateLeft(node);
         }
 
         if (balance < -1 && this.getBalance(node.right) > 0) {
+            if (this.onRotate) this.onRotate('RL', node.value);
             node.right = this.rotateRight(node.right);
             return this.rotateLeft(node);
         }
