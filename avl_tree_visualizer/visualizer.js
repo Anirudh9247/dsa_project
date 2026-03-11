@@ -18,12 +18,7 @@ class AVLVisualizer {
         this.animationSpeed = 500;
         this.nodeElements = new Map(); // Map node reference to DOM element
         
-        this.panZoom = svgPanZoom(this.svg, {
-            zoomEnabled: true,
-            controlIconsEnabled: true,
-            fit: true,
-            center: true,
-        });
+        this.panZoom = null;
     }
 
     // Calculate positions for all nodes
@@ -49,23 +44,44 @@ class AVLVisualizer {
         this.g.innerHTML = '';
         this.nodeElements.clear();
 
-        if (!this.tree.root) return;
+        if (!this.tree.root) {
+            if (this.panZoom) {
+                this.panZoom.destroy();
+                this.panZoom = null;
+            }
+            return;
+        }
 
-        const containerWidth = this.container.offsetWidth;
+        // Calculate positions
+        const containerWidth = Math.max(this.container.offsetWidth, 800);
         this.calculatePositions(this.tree.root, containerWidth / 2, 50, 0, containerWidth / 4);
+        
+        // Draw elements
         this.drawLines(this.tree.root);
         this.drawNodes(this.tree.root);
 
-        // Allow the browser to repaint and layout the new SVG DOM before panning
-        setTimeout(() => {
-            try {
-                this.panZoom.updateBBox();
-                this.panZoom.fit();
-                this.panZoom.center();
-            } catch (err) {
-                console.error("SVG pan/zoom recalculation error:", err);
-            }
-        }, 10);
+        // Instead of a blind timeout, wait for the next exact animation frame so the browser 
+        // can guarantee SVG geometry is calculated before binding/updating the pan-zoom plugin.
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                if (!this.panZoom) {
+                    this.panZoom = svgPanZoom(this.svg, {
+                        zoomEnabled: true,
+                        controlIconsEnabled: true,
+                        fit: true,
+                        center: true,
+                    });
+                } else {
+                    try {
+                        this.panZoom.updateBBox();
+                        this.panZoom.fit();
+                        this.panZoom.center();
+                    } catch (err) {
+                        console.log("Ignored panZoom geometry warning:", err);
+                    }
+                }
+            });
+        });
     }
 
     drawLines(node) {
