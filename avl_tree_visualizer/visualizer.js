@@ -56,9 +56,16 @@ class AVLVisualizer {
         this.drawLines(this.tree.root);
         this.drawNodes(this.tree.root);
 
-        this.panZoom.updateBBox();
-        this.panZoom.fit();
-        this.panZoom.center();
+        // Allow the browser to repaint and layout the new SVG DOM before panning
+        setTimeout(() => {
+            try {
+                this.panZoom.updateBBox();
+                this.panZoom.fit();
+                this.panZoom.center();
+            } catch (err) {
+                console.error("SVG pan/zoom recalculation error:", err);
+            }
+        }, 10);
     }
 
     drawLines(node) {
