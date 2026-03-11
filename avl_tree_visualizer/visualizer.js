@@ -22,20 +22,25 @@ class AVLVisualizer {
     }
 
     // Calculate positions for all nodes
-    calculatePositions(node, x, y, depth, horizontalGap) {
+    calculatePositions(node, x, y, depth, horizontalGap, bounds) {
         if (!node) return;
 
         node.x = x;
         node.y = y;
+        
+        // Track the visual bounds of the entire tree
+        if (x < bounds.minX) bounds.minX = x;
+        if (x > bounds.maxX) bounds.maxX = x;
+        if (y > bounds.maxY) bounds.maxY = y;
 
         const nextY = y + 100;
         const nextHorizontalGap = horizontalGap / 1.8; // Reduce the gap for lower levels
 
         if (node.left) {
-            this.calculatePositions(node.left, x - horizontalGap, nextY, depth + 1, nextHorizontalGap);
+            this.calculatePositions(node.left, x - horizontalGap, nextY, depth + 1, nextHorizontalGap, bounds);
         }
         if (node.right) {
-            this.calculatePositions(node.right, x + horizontalGap, nextY, depth + 1, nextHorizontalGap);
+            this.calculatePositions(node.right, x + horizontalGap, nextY, depth + 1, nextHorizontalGap, bounds);
         }
     }
 
@@ -52,9 +57,19 @@ class AVLVisualizer {
             return;
         }
 
-        // Calculate positions
+        // Calculate positions dynamically
         const containerWidth = Math.max(this.container.offsetWidth, 800);
-        this.calculatePositions(this.tree.root, containerWidth / 2, 50, 0, containerWidth / 4);
+        const bounds = { minX: containerWidth / 2, maxX: containerWidth / 2, maxY: 50 };
+        this.calculatePositions(this.tree.root, containerWidth / 2, 50, 0, containerWidth / 4, bounds);
+        
+        // Resize SVG viewBox to match the dynamic bounds before drawing
+        const padding = 100;
+        const width = Math.max(containerWidth, bounds.maxX - bounds.minX + padding * 2);
+        const height = Math.max(this.container.offsetHeight, bounds.maxY + padding);
+        
+        // Adjust the g element to be centered within the viewBox
+        const xOffset = width / 2 - (bounds.maxX + bounds.minX) / 2;
+        this.g.setAttribute("transform", `translate(${xOffset}, 0)`);
         
         // Draw elements
         this.drawLines(this.tree.root);
@@ -70,6 +85,8 @@ class AVLVisualizer {
                         controlIconsEnabled: true,
                         fit: true,
                         center: true,
+                        minZoom: 0.1,
+                        maxZoom: 10
                     });
                 } else {
                     try {
